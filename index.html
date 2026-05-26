@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SCATFAIR Lucky Draw</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#ffffff;
+    overflow:hidden;
+}
+.container{
+    display:flex;
+    height:100vh;
+}
+.left{
+    flex:3;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background:
+      linear-gradient(135deg,#ffffff 0%,#f7f7f7 100%);
+}
+.right{
+    width:340px;
+    background:#5A31D6;
+    color:white;
+    padding:20px;
+    overflow:auto;
+}
+.title{
+    font-size:42px;
+    font-weight:800;
+    color:#5A31D6;
+}
+.subtitle{
+    font-size:18px;
+    margin-bottom:30px;
+}
+.winner-box{
+    width:650px;
+    height:180px;
+    background:white;
+    border:4px solid #5A31D6;
+    border-radius:24px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:54px;
+    font-weight:800;
+    color:#ff7a00;
+    box-shadow:0 10px 30px rgba(0,0,0,.12);
+}
+button{
+    margin-top:24px;
+    padding:16px 42px;
+    font-size:24px;
+    border:none;
+    border-radius:14px;
+    cursor:pointer;
+    background:#ff7a00;
+    color:white;
+    font-weight:700;
+}
+textarea{
+    width:100%;
+    height:220px;
+    border-radius:12px;
+    padding:12px;
+}
+.history{
+    margin-top:20px;
+    font-size:18px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="left">
+<div class="title">SCATFAIR LUCKY DRAW</div>
+<div class="subtitle">Sarawak Career & Training Fair</div>
+
+<div class="winner-box" id="winnerBox">
+READY TO DRAW
+</div>
+
+<button onclick="toggleDraw()" id="drawBtn">DRAW WINNER</button>
+</div>
+
+<div class="right">
+<h2>Participants</h2>
+
+<textarea id="namesInput" placeholder="Paste names here, one per line"></textarea>
+
+<input type="file" id="csvFile" accept=".csv" />
+
+<br><br>
+
+<label>
+<input type="checkbox" id="removeWinner" checked>
+ Remove winner after draw
+</label>
+
+<div class="history">
+<h3>Winner History</h3>
+<div id="historyList"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+let names = [];
+let winners = [];
+let drawing = false;
+let interval;
+
+document.getElementById("csvFile").addEventListener("change", function(e){
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(event){
+        names = event.target.result
+            .split(/\r?\n/)
+            .filter(n => n.trim() !== "");
+    };
+
+    reader.readAsText(file);
+});
+
+function loadNames(){
+    const pasted = document.getElementById("namesInput").value
+        .split("\n")
+        .filter(n => n.trim() !== "");
+
+    if(pasted.length > 0){
+        names = pasted;
+    }
+}
+
+function toggleDraw(){
+    loadNames();
+
+    if(names.length===0){
+        alert("Please add participant names first.");
+        return;
+    }
+
+    if(!drawing){
+        startShuffle();
+    }else{
+        stopShuffle();
+    }
+}
+
+function startShuffle(){
+    drawing=true;
+    document.getElementById("drawBtn").innerText="STOP";
+
+    interval=setInterval(()=>{
+        const randomName =
+          names[Math.floor(Math.random()*names.length)];
+
+        document.getElementById("winnerBox").innerText=randomName;
+    },100);
+}
+
+function stopShuffle(){
+    clearInterval(interval);
+
+    const winner =
+      names[Math.floor(Math.random()*names.length)];
+
+    document.getElementById("winnerBox").innerText=winner;
+
+    winners.push(winner);
+
+    document.getElementById("historyList").innerHTML =
+      winners.map((w,i)=>`${i+1}. ${w}`).join("<br>");
+
+    if(document.getElementById("removeWinner").checked){
+        names = names.filter(n=>n!==winner);
+    }
+
+    drawing=false;
+    document.getElementById("drawBtn").innerText="DRAW AGAIN";
+}
+</script>
+
+</body>
+</html>
